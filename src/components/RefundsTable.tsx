@@ -1,61 +1,36 @@
 import { Eye, MoreHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useRefunds, Refund } from "@/data/mockData";
 
-interface Refund {
-  id: string;
-  claimId: string;
-  vatPeriod: string;
-  amount: number;
-  submittedDate: string;
-  status: "approved" | "pending" | "rejected" | "processing";
+interface RefundsTableProps {
+  searchQuery?: string;
+  statusFilter?: string;
+  limit?: number;
 }
 
-const RefundsTable = () => {
-  const refunds: Refund[] = [
-    {
-      id: "1",
-      claimId: "RC-2024-001",
-      vatPeriod: "Q1 2024",
-      amount: 125000,
-      submittedDate: "2024-03-15",
-      status: "approved",
-    },
-    {
-      id: "2",
-      claimId: "RC-2024-002",
-      vatPeriod: "Q2 2024",
-      amount: 89500,
-      submittedDate: "2024-06-20",
-      status: "processing",
-    },
-    {
-      id: "3",
-      claimId: "RC-2024-003",
-      vatPeriod: "March 2024",
-      amount: 45000,
-      submittedDate: "2024-04-05",
-      status: "pending",
-    },
-    {
-      id: "4",
-      claimId: "RC-2024-004",
-      vatPeriod: "April 2024",
-      amount: 32000,
-      submittedDate: "2024-05-10",
-      status: "rejected",
-    },
-    {
-      id: "5",
-      claimId: "RC-2024-005",
-      vatPeriod: "May 2024",
-      amount: 78000,
-      submittedDate: "2024-06-08",
-      status: "approved",
-    },
-  ];
+const RefundsTable = ({ searchQuery = "", statusFilter = "all", limit }: RefundsTableProps) => {
+  const allRefunds = useRefunds();
+  
+  // Filter refunds
+  let refunds = allRefunds.filter((refund) => {
+    const matchesSearch = 
+      refund.claimId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      refund.vatPeriod.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      refund.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || refund.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Apply limit if specified
+  if (limit) {
+    refunds = refunds.slice(0, limit);
+  }
 
   const getStatusBadge = (status: Refund["status"]) => {
     const styles = {
@@ -98,14 +73,22 @@ const RefundsTable = () => {
   return (
     <Card className="border-border shadow-sm">
       <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-xl font-serif text-foreground">Pending Refunds</CardTitle>
-            <CardDescription>Track and manage your VAT refund claims</CardDescription>
+            <CardTitle className="text-xl font-serif text-foreground">
+              {statusFilter === "all" ? "All Claims" : `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Claims`}
+            </CardTitle>
+            <CardDescription>
+              {refunds.length} claim{refunds.length !== 1 ? "s" : ""} found
+            </CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="text-sm">
-            View All
-          </Button>
+          {limit && (
+            <Link to="/claims">
+              <Button variant="outline" size="sm" className="text-sm">
+                View All
+              </Button>
+            </Link>
+          )}
         </div>
       </CardHeader>
       <CardContent>
