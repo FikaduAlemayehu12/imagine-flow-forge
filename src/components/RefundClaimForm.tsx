@@ -6,8 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { addRefund } from "@/data/mockData";
 
-const RefundClaimForm = () => {
+interface RefundClaimFormProps {
+  onSuccess?: () => void;
+}
+
+const RefundClaimForm = ({ onSuccess }: RefundClaimFormProps) => {
   const { toast } = useToast();
   const [vatPeriod, setVatPeriod] = useState("");
   const [vatPaid, setVatPaid] = useState("");
@@ -15,6 +20,24 @@ const RefundClaimForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!vatPeriod || !vatPaid) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addRefund({
+      vatPeriod,
+      amount: Number(vatPaid),
+      submittedDate: new Date().toISOString().split("T")[0],
+      status: "pending",
+      description: `VAT refund claim for ${vatPeriod}`,
+    });
+
     toast({
       title: "Refund Claim Submitted",
       description: "Your VAT refund claim has been submitted successfully. You will receive updates via email.",
@@ -22,6 +45,7 @@ const RefundClaimForm = () => {
     setVatPeriod("");
     setVatPaid("");
     setFiles(null);
+    onSuccess?.();
   };
 
   const vatPeriods = [
