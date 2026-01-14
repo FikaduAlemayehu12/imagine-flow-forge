@@ -1,18 +1,12 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import Header from "./Header";
 import MobileNav from "./MobileNav";
-import { startRealtimeSimulation } from "@/data/mockData";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  useEffect(() => {
-    const stopSimulation = startRealtimeSimulation();
-    return stopSimulation;
-  }, []);
-
   return (
     <div className="min-h-screen bg-background">
       <Header />

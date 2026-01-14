@@ -1,11 +1,11 @@
 import { Home, FileText, Clock, HelpCircle, Bell } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useNotifications } from "@/data/mockData";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const MobileNav = () => {
   const location = useLocation();
-  const notifications = useNotifications();
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { data: notifications = [] } = useNotifications();
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
