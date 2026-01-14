@@ -1,4 +1,4 @@
-import { Bell, User, Menu, LogOut, Settings } from "lucide-react";
+import { Bell, User, Menu, LogOut, Settings, Shield } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,66 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNotifications as useNotificationsQuery } from "@/hooks/useNotifications";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole, AppRole, roleConfig } from "@/hooks/useUserRole";
+import RoleBadge from "@/components/RoleBadge";
+
+interface NavLink {
+  href: string;
+  label: string;
+}
+
+const getNavLinks = (role: AppRole): NavLink[] => {
+  const baseLinks: NavLink[] = [
+    { href: "/", label: "Dashboard" },
+  ];
+
+  switch (role) {
+    case "taxpayer":
+      return [
+        ...baseLinks,
+        { href: "/claims", label: "Submit Claim" },
+        { href: "/history", label: "History" },
+        { href: "/support", label: "Support" },
+      ];
+    case "officer":
+      return [
+        ...baseLinks,
+        { href: "/officer/review", label: "Review Claims" },
+        { href: "/officer/documents", label: "Documents" },
+        { href: "/support", label: "Support" },
+      ];
+    case "supervisor":
+      return [
+        ...baseLinks,
+        { href: "/supervisor/approval", label: "Approvals" },
+        { href: "/supervisor/team", label: "Team" },
+        { href: "/support", label: "Support" },
+      ];
+    case "auditor":
+      return [
+        ...baseLinks,
+        { href: "/auditor/queue", label: "Audit Queue" },
+        { href: "/auditor/history", label: "Audit History" },
+        { href: "/support", label: "Support" },
+      ];
+    case "admin":
+      return [
+        ...baseLinks,
+        { href: "/admin/users", label: "Users" },
+        { href: "/admin/claims", label: "All Claims" },
+        { href: "/admin/settings", label: "Settings" },
+      ];
+    case "risk_analyst":
+      return [
+        ...baseLinks,
+        { href: "/risk/assessments", label: "Assessments" },
+        { href: "/risk/analytics", label: "Analytics" },
+        { href: "/support", label: "Support" },
+      ];
+    default:
+      return baseLinks;
+  }
+};
 
 const Header = () => {
   const location = useLocation();
@@ -19,14 +79,12 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: notifications = [] } = useNotificationsQuery();
   const { signOut, user } = useAuth();
+  const { data: userRole } = useUserRole();
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  const navLinks = [
-    { href: "/", label: "Dashboard" },
-    { href: "/claims", label: "Submit Claim" },
-    { href: "/history", label: "History" },
-    { href: "/support", label: "Support" },
-  ];
+  const role: AppRole = userRole?.role || "taxpayer";
+  const navLinks = getNavLinks(role);
+  const config = roleConfig[role];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -76,6 +134,11 @@ const Header = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-2 md:gap-3">
+              {/* Role Badge - Desktop */}
+              <div className="hidden md:block">
+                <RoleBadge role={role} size="sm" />
+              </div>
+
               {/* Notifications */}
               <Link to="/notifications">
                 <Button 
@@ -103,9 +166,15 @@ const Header = () => {
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                    {user?.email}
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {user?.user_metadata?.full_name || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <div className="mt-2">
+                      <RoleBadge role={role} size="sm" />
+                    </div>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
@@ -116,6 +185,15 @@ const Header = () => {
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </DropdownMenuItem>
+                  {(role === "admin" || role === "supervisor") && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Panel
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-accent" onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
@@ -136,7 +214,10 @@ const Header = () => {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[280px] bg-sidebar">
-                  <nav className="flex flex-col gap-4 mt-8">
+                  <div className="mt-4 mb-6 px-4">
+                    <RoleBadge role={role} />
+                  </div>
+                  <nav className="flex flex-col gap-2">
                     {navLinks.map((link) => (
                       <Link
                         key={link.href}
@@ -156,7 +237,7 @@ const Header = () => {
                         setMobileMenuOpen(false);
                         handleLogout();
                       }}
-                      className="text-lg font-medium py-2 px-4 rounded-lg transition-colors text-accent hover:bg-sidebar-accent text-left"
+                      className="text-lg font-medium py-2 px-4 rounded-lg transition-colors text-accent hover:bg-sidebar-accent text-left mt-4"
                     >
                       Logout
                     </button>
