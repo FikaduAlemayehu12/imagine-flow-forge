@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogIn, UserPlus, DollarSign } from "lucide-react";
+import { Loader2, LogIn, UserPlus, Shield, CheckCircle2 } from "lucide-react";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
@@ -121,141 +121,199 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-8">
-        <div className="p-2 bg-primary rounded-lg">
-          <DollarSign className="h-6 w-6 text-primary-foreground" />
+    <div className="min-h-screen flex flex-col">
+      {/* Ethiopian Flag Stripe */}
+      <div className="ethiopian-stripe w-full" />
+      
+      <div className="flex-1 flex flex-col lg:flex-row">
+        {/* Left Panel - Branding */}
+        <div className="hidden lg:flex lg:w-1/2 bg-sidebar text-sidebar-foreground flex-col justify-center items-center p-12">
+          <div className="max-w-md text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-secondary/20 flex items-center justify-center">
+              <span className="text-4xl">🇪🇹</span>
+            </div>
+            <h1 className="text-4xl font-serif font-bold mb-4">
+              Ministry of Revenues
+            </h1>
+            <p className="text-xl text-sidebar-foreground/80 mb-8">
+              VAT & Tax Refund System
+            </p>
+            
+            <div className="space-y-4 text-left bg-sidebar-accent/30 rounded-lg p-6">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-sidebar-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Fast Processing</p>
+                  <p className="text-sm text-sidebar-foreground/70">Track your claims in real-time</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Shield className="h-5 w-5 text-sidebar-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Secure & Compliant</p>
+                  <p className="text-sm text-sidebar-foreground/70">Bank-grade security standards</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-sidebar-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Digital Documentation</p>
+                  <p className="text-sm text-sidebar-foreground/70">Paperless claim submissions</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <h1 className="text-2xl font-serif font-bold text-foreground">
-          VAT Refund Portal
-        </h1>
+
+        {/* Right Panel - Auth Form */}
+        <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 bg-gradient-to-br from-background via-background to-primary/5">
+          {/* Mobile Header */}
+          <div className="lg:hidden flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-2xl">🇪🇹</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-serif font-bold text-foreground">
+                Ministry of Revenues
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                VAT & Tax Refund System
+              </p>
+            </div>
+          </div>
+
+          <Card className="w-full max-w-md border-border shadow-xl">
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 h-12">
+                <TabsTrigger value="login" className="text-sm font-medium">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="text-sm font-medium">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <CardHeader className="space-y-1 pb-4">
+                  <CardTitle className="text-2xl font-serif">Welcome back</CardTitle>
+                  <CardDescription>
+                    Enter your credentials to access your account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        disabled={isLoading}
+                        className="h-11"
+                      />
+                      {errors.loginEmail && (
+                        <p className="text-sm text-destructive">{errors.loginEmail}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Password</Label>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="h-11"
+                      />
+                      {errors.loginPassword && (
+                        <p className="text-sm text-destructive">{errors.loginPassword}</p>
+                      )}
+                    </div>
+                    <Button type="submit" className="w-full h-11 text-base" disabled={isLoading}>
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      ) : (
+                        <LogIn className="h-5 w-5 mr-2" />
+                      )}
+                      Sign In
+                    </Button>
+                  </form>
+                </CardContent>
+              </TabsContent>
+              
+              <TabsContent value="signup">
+                <CardHeader className="space-y-1 pb-4">
+                  <CardTitle className="text-2xl font-serif">Create account</CardTitle>
+                  <CardDescription>
+                    Register to start managing your VAT refunds
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Abebe Kebede"
+                        value={signupName}
+                        onChange={(e) => setSignupName(e.target.value)}
+                        disabled={isLoading}
+                        className="h-11"
+                      />
+                      {errors.signupName && (
+                        <p className="text-sm text-destructive">{errors.signupName}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        disabled={isLoading}
+                        className="h-11"
+                      />
+                      {errors.signupEmail && (
+                        <p className="text-sm text-destructive">{errors.signupEmail}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="h-11"
+                      />
+                      {errors.signupPassword && (
+                        <p className="text-sm text-destructive">{errors.signupPassword}</p>
+                      )}
+                    </div>
+                    <Button type="submit" className="w-full h-11 text-base" disabled={isLoading}>
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      ) : (
+                        <UserPlus className="h-5 w-5 mr-2" />
+                      )}
+                      Create Account
+                    </Button>
+                  </form>
+                </CardContent>
+              </TabsContent>
+            </Tabs>
+          </Card>
+
+          <p className="mt-8 text-sm text-muted-foreground text-center max-w-sm">
+            By signing in, you agree to our Terms of Service and Privacy Policy.
+            Government of Ethiopia © 2024
+          </p>
+        </div>
       </div>
-
-      <Card className="w-full max-w-md border-border shadow-lg">
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="login">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-serif">Welcome back</CardTitle>
-              <CardDescription>
-                Enter your credentials to access your account
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                  {errors.loginEmail && (
-                    <p className="text-sm text-destructive">{errors.loginEmail}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                  {errors.loginPassword && (
-                    <p className="text-sm text-destructive">{errors.loginPassword}</p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <LogIn className="h-4 w-4 mr-2" />
-                  )}
-                  Sign In
-                </Button>
-              </form>
-            </CardContent>
-          </TabsContent>
-          
-          <TabsContent value="signup">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-serif">Create account</CardTitle>
-              <CardDescription>
-                Register to start managing your VAT refunds
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    disabled={isLoading}
-                  />
-                  {errors.signupName && (
-                    <p className="text-sm text-destructive">{errors.signupName}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                  {errors.signupEmail && (
-                    <p className="text-sm text-destructive">{errors.signupEmail}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                  {errors.signupPassword && (
-                    <p className="text-sm text-destructive">{errors.signupPassword}</p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <UserPlus className="h-4 w-4 mr-2" />
-                  )}
-                  Create Account
-                </Button>
-              </form>
-            </CardContent>
-          </TabsContent>
-        </Tabs>
-      </Card>
-
-      <p className="mt-6 text-sm text-muted-foreground text-center">
-        Ministry of Revenues - VAT & Tax Refund System
-      </p>
     </div>
   );
 };
