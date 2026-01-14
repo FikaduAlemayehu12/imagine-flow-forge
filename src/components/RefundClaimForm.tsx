@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Upload, Send } from "lucide-react";
+import { Upload, Send, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { addRefund } from "@/data/mockData";
+import { useCreateClaim } from "@/hooks/useRefundClaims";
 
 interface RefundClaimFormProps {
   onSuccess?: () => void;
@@ -17,8 +17,10 @@ const RefundClaimForm = ({ onSuccess }: RefundClaimFormProps) => {
   const [vatPeriod, setVatPeriod] = useState("");
   const [vatPaid, setVatPaid] = useState("");
   const [files, setFiles] = useState<FileList | null>(null);
+  
+  const createClaim = useCreateClaim();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!vatPeriod || !vatPaid) {
@@ -30,22 +32,39 @@ const RefundClaimForm = ({ onSuccess }: RefundClaimFormProps) => {
       return;
     }
 
-    addRefund({
-      vatPeriod,
-      amount: Number(vatPaid),
-      submittedDate: new Date().toISOString().split("T")[0],
-      status: "pending",
-      description: `VAT refund claim for ${vatPeriod}`,
-    });
+    const amount = Number(vatPaid);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid positive amount.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    toast({
-      title: "Refund Claim Submitted",
-      description: "Your VAT refund claim has been submitted successfully. You will receive updates via email.",
-    });
-    setVatPeriod("");
-    setVatPaid("");
-    setFiles(null);
-    onSuccess?.();
+    try {
+      await createClaim.mutateAsync({
+        vatPeriod,
+        amount,
+        description: `VAT refund claim for ${vatPeriod}`,
+      });
+
+      toast({
+        title: "Refund Claim Submitted",
+        description: "Your VAT refund claim has been submitted successfully. You will receive updates via notifications.",
+      });
+      
+      setVatPeriod("");
+      setVatPaid("");
+      setFiles(null);
+      onSuccess?.();
+    } catch (error) {
+      toast({
+        title: "Submission Failed",
+        description: error instanceof Error ? error.message : "Failed to submit claim. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const vatPeriods = [
@@ -98,6 +117,8 @@ const RefundClaimForm = ({ onSuccess }: RefundClaimFormProps) => {
               value={vatPaid}
               onChange={(e) => setVatPaid(e.target.value)}
               className="bg-background"
+              min="0"
+              step="0.01"
             />
           </div>
 
@@ -128,8 +149,16 @@ const RefundClaimForm = ({ onSuccess }: RefundClaimFormProps) => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Send className="h-4 w-4 mr-2" />
+          <Button 
+            type="submit" 
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            disabled={createClaim.isPending}
+          >
+            {createClaim.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
             Submit Claim
           </Button>
         </form>

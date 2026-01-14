@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Download, Calendar, TrendingUp, TrendingDown } from "lucide-react";
+import { Download, Calendar, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRefunds } from "@/data/mockData";
+import { useRefundClaims, transformClaimForUI } from "@/hooks/useRefundClaims";
 import {
   Select,
   SelectContent,
@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/select";
 
 const History = () => {
-  const refunds = useRefunds();
+  const { data: claims = [], isLoading } = useRefundClaims();
   const [yearFilter, setYearFilter] = useState("2024");
+
+  // Transform claims to UI format
+  const refunds = claims.map(transformClaimForUI);
 
   const approvedRefunds = refunds.filter((r) => r.status === "approved");
   const rejectedRefunds = refunds.filter((r) => r.status === "rejected");
@@ -54,6 +57,16 @@ const History = () => {
     }
     return acc;
   }, {} as Record<string, { total: number; approved: number; count: number }>);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -144,20 +157,26 @@ const History = () => {
             <CardDescription>Refund claims by month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {Object.entries(monthlyData).map(([month, data]) => (
-                <div key={month} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <div>
-                    <p className="font-medium text-foreground">{month}</p>
-                    <p className="text-sm text-muted-foreground">{data.count} claims submitted</p>
+            {Object.keys(monthlyData).length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">
+                No claims found. Submit your first claim to see history.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(monthlyData).map(([month, data]) => (
+                  <div key={month} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div>
+                      <p className="font-medium text-foreground">{month}</p>
+                      <p className="text-sm text-muted-foreground">{data.count} claims submitted</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-foreground">{formatCurrency(data.total)}</p>
+                      <p className="text-sm text-primary">{formatCurrency(data.approved)} approved</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-foreground">{formatCurrency(data.total)}</p>
-                    <p className="text-sm text-primary">{formatCurrency(data.approved)} approved</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -168,33 +187,39 @@ const History = () => {
             <CardDescription>Recently processed refund claims</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {[...approvedRefunds, ...rejectedRefunds]
-                .sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime())
-                .slice(0, 5)
-                .map((refund) => (
-                  <div
-                    key={refund.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          refund.status === "approved" ? "bg-primary" : "bg-accent"
-                        }`}
-                      />
-                      <div>
-                        <p className="font-medium text-foreground">{refund.claimId}</p>
-                        <p className="text-sm text-muted-foreground">{refund.vatPeriod}</p>
+            {[...approvedRefunds, ...rejectedRefunds].length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">
+                No completed transactions yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {[...approvedRefunds, ...rejectedRefunds]
+                  .sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime())
+                  .slice(0, 5)
+                  .map((refund) => (
+                    <div
+                      key={refund.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            refund.status === "approved" ? "bg-primary" : "bg-accent"
+                          }`}
+                        />
+                        <div>
+                          <p className="font-medium text-foreground">{refund.claimId}</p>
+                          <p className="text-sm text-muted-foreground">{refund.vatPeriod}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-foreground">{formatCurrency(refund.amount)}</p>
+                        <p className="text-sm text-muted-foreground">{formatDate(refund.submittedDate)}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-foreground">{formatCurrency(refund.amount)}</p>
-                      <p className="text-sm text-muted-foreground">{formatDate(refund.submittedDate)}</p>
-                    </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

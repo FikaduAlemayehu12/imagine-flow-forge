@@ -1,6 +1,6 @@
-import { Bell, User, Menu, X, LogOut, Settings } from "lucide-react";
+import { Bell, User, Menu, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -10,13 +10,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNotifications } from "@/data/mockData";
+import { useNotifications as useNotificationsQuery } from "@/hooks/useNotifications";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const notifications = useNotifications();
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { data: notifications = [] } = useNotificationsQuery();
+  const { signOut, user } = useAuth();
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const navLinks = [
     { href: "/", label: "Dashboard" },
@@ -26,6 +29,11 @@ const Header = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   return (
     <header className="w-full sticky top-0 z-50">
@@ -96,6 +104,10 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                    {user?.email}
+                  </div>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <User className="h-4 w-4 mr-2" />
                     Profile
@@ -105,7 +117,7 @@ const Header = () => {
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-accent">
+                  <DropdownMenuItem className="text-accent" onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </DropdownMenuItem>
@@ -139,6 +151,15 @@ const Header = () => {
                         {link.label}
                       </Link>
                     ))}
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleLogout();
+                      }}
+                      className="text-lg font-medium py-2 px-4 rounded-lg transition-colors text-accent hover:bg-sidebar-accent text-left"
+                    >
+                      Logout
+                    </button>
                   </nav>
                 </SheetContent>
               </Sheet>

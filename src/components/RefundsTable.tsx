@@ -1,10 +1,10 @@
-import { Eye, MoreHorizontal } from "lucide-react";
+import { Eye, MoreHorizontal, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useRefunds, Refund } from "@/data/mockData";
+import { useRefundClaims, transformClaimForUI } from "@/hooks/useRefundClaims";
 
 interface RefundsTableProps {
   searchQuery?: string;
@@ -13,7 +13,10 @@ interface RefundsTableProps {
 }
 
 const RefundsTable = ({ searchQuery = "", statusFilter = "all", limit }: RefundsTableProps) => {
-  const allRefunds = useRefunds();
+  const { data: claims = [], isLoading } = useRefundClaims();
+  
+  // Transform claims to UI format
+  const allRefunds = claims.map(transformClaimForUI);
   
   // Filter refunds
   let refunds = allRefunds.filter((refund) => {
@@ -32,7 +35,9 @@ const RefundsTable = ({ searchQuery = "", statusFilter = "all", limit }: Refunds
     refunds = refunds.slice(0, limit);
   }
 
-  const getStatusBadge = (status: Refund["status"]) => {
+  type RefundStatus = "approved" | "pending" | "processing" | "rejected";
+  
+  const getStatusBadge = (status: RefundStatus) => {
     const styles = {
       approved: "status-badge-approved",
       pending: "status-badge-pending",
@@ -70,6 +75,16 @@ const RefundsTable = ({ searchQuery = "", statusFilter = "all", limit }: Refunds
     });
   };
 
+  if (isLoading) {
+    return (
+      <Card className="border-border shadow-sm">
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-border shadow-sm">
       <CardHeader className="pb-4">
@@ -105,25 +120,33 @@ const RefundsTable = ({ searchQuery = "", statusFilter = "all", limit }: Refunds
               </TableRow>
             </TableHeader>
             <TableBody>
-              {refunds.map((refund) => (
-                <TableRow key={refund.id} className="border-border hover:bg-muted/30">
-                  <TableCell className="font-medium text-foreground">{refund.claimId}</TableCell>
-                  <TableCell className="text-muted-foreground">{refund.vatPeriod}</TableCell>
-                  <TableCell className="font-medium text-foreground">{formatCurrency(refund.amount)}</TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(refund.submittedDate)}</TableCell>
-                  <TableCell>{getStatusBadge(refund.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {refunds.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No claims found. Submit your first claim to get started.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                refunds.map((refund) => (
+                  <TableRow key={refund.id} className="border-border hover:bg-muted/30">
+                    <TableCell className="font-medium text-foreground">{refund.claimId}</TableCell>
+                    <TableCell className="text-muted-foreground">{refund.vatPeriod}</TableCell>
+                    <TableCell className="font-medium text-foreground">{formatCurrency(refund.amount)}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(refund.submittedDate)}</TableCell>
+                    <TableCell>{getStatusBadge(refund.status)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

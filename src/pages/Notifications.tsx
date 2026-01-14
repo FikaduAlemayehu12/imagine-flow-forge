@@ -1,13 +1,17 @@
-import { Bell, Check, CheckCheck, Info, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { Bell, Check, CheckCheck, Info, AlertTriangle, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useNotifications, markNotificationRead, markAllNotificationsRead } from "@/data/mockData";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, transformNotificationForUI } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 
 const Notifications = () => {
-  const notifications = useNotifications();
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { data: notifications = [], isLoading } = useNotifications();
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
+  
+  const transformedNotifications = notifications.map(transformNotificationForUI);
+  const unreadCount = transformedNotifications.filter((n) => !n.read).length;
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -35,6 +39,24 @@ const Notifications = () => {
     }
   };
 
+  const handleMarkRead = (id: string) => {
+    markRead.mutate(id);
+  };
+
+  const handleMarkAllRead = () => {
+    markAllRead.mutate();
+  };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6 animate-fade-in">
@@ -59,8 +81,9 @@ const Notifications = () => {
           {unreadCount > 0 && (
             <Button
               variant="outline"
-              onClick={() => markAllNotificationsRead()}
+              onClick={handleMarkAllRead}
               className="w-full sm:w-auto"
+              disabled={markAllRead.isPending}
             >
               <CheckCheck className="h-4 w-4 mr-2" />
               Mark All Read
@@ -76,19 +99,19 @@ const Notifications = () => {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
-              {notifications.length === 0 ? (
+              {transformedNotifications.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
                   <Bell className="h-12 w-12 mx-auto mb-4 opacity-30" />
                   <p>No notifications yet</p>
                 </div>
               ) : (
-                notifications.map((notification) => (
+                transformedNotifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={`p-4 flex items-start gap-4 transition-colors border-l-4 ${getTypeStyles(notification.type)} ${
                       !notification.read ? "bg-opacity-100" : "bg-opacity-50 opacity-70"
                     }`}
-                    onClick={() => markNotificationRead(notification.id)}
+                    onClick={() => !notification.read && handleMarkRead(notification.id)}
                   >
                     <div className="flex-shrink-0 mt-0.5">
                       {getIcon(notification.type)}
@@ -116,8 +139,9 @@ const Notifications = () => {
                         className="flex-shrink-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          markNotificationRead(notification.id);
+                          handleMarkRead(notification.id);
                         }}
+                        disabled={markRead.isPending}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
