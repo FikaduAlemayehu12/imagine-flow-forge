@@ -14,16 +14,461 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          performed_by: string | null
+          record_id: string
+          table_name: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_by?: string | null
+          record_id: string
+          table_name: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_by?: string | null
+          record_id?: string
+          table_name?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      category_benchmarks: {
+        Row: {
+          avg_approval_rate: number | null
+          avg_claim_frequency: number | null
+          avg_processing_days: number | null
+          avg_refund_amount: number | null
+          business_category: string
+          id: string
+          period_end: string | null
+          period_start: string | null
+          sample_size: number | null
+          updated_at: string
+        }
+        Insert: {
+          avg_approval_rate?: number | null
+          avg_claim_frequency?: number | null
+          avg_processing_days?: number | null
+          avg_refund_amount?: number | null
+          business_category: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          sample_size?: number | null
+          updated_at?: string
+        }
+        Update: {
+          avg_approval_rate?: number | null
+          avg_claim_frequency?: number | null
+          avg_processing_days?: number | null
+          avg_refund_amount?: number | null
+          business_category?: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          sample_size?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      claim_documents: {
+        Row: {
+          claim_id: string
+          document_type: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          uploaded_at: string
+        }
+        Insert: {
+          claim_id: string
+          document_type?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          uploaded_at?: string
+        }
+        Update: {
+          claim_id?: string
+          document_type?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_documents_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "refund_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          related_claim_id: string | null
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_claim_id?: string | null
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_claim_id?: string | null
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_related_claim_id_fkey"
+            columns: ["related_claim_id"]
+            isOneToOne: false
+            referencedRelation: "refund_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          business_address: string | null
+          business_category: string | null
+          business_name: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          registration_date: string | null
+          tin_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_address?: string | null
+          business_category?: string | null
+          business_name?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          registration_date?: string | null
+          tin_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_address?: string | null
+          business_category?: string | null
+          business_name?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          registration_date?: string | null
+          tin_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      refund_claims: {
+        Row: {
+          bank_account_number: string | null
+          bank_name: string | null
+          claim_amount: number
+          claim_number: string
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          status: Database["public"]["Enums"]["claim_status"]
+          submitted_at: string | null
+          taxpayer_id: string
+          updated_at: string
+          vat_period: string
+        }
+        Insert: {
+          bank_account_number?: string | null
+          bank_name?: string | null
+          claim_amount: number
+          claim_number: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["claim_status"]
+          submitted_at?: string | null
+          taxpayer_id: string
+          updated_at?: string
+          vat_period: string
+        }
+        Update: {
+          bank_account_number?: string | null
+          bank_name?: string | null
+          claim_amount?: number
+          claim_number?: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["claim_status"]
+          submitted_at?: string | null
+          taxpayer_id?: string
+          updated_at?: string
+          vat_period?: string
+        }
+        Relationships: []
+      }
+      risk_assessments: {
+        Row: {
+          assessed_at: string
+          assessed_by: string | null
+          assessment_details: Json | null
+          auto_assessed: boolean | null
+          claim_id: string
+          created_at: string
+          historical_analysis: Json | null
+          id: string
+          peer_comparison_data: Json | null
+          recommendation: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          risk_score: number
+        }
+        Insert: {
+          assessed_at?: string
+          assessed_by?: string | null
+          assessment_details?: Json | null
+          auto_assessed?: boolean | null
+          claim_id: string
+          created_at?: string
+          historical_analysis?: Json | null
+          id?: string
+          peer_comparison_data?: Json | null
+          recommendation?: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          risk_score: number
+        }
+        Update: {
+          assessed_at?: string
+          assessed_by?: string | null
+          assessment_details?: Json | null
+          auto_assessed?: boolean | null
+          claim_id?: string
+          created_at?: string
+          historical_analysis?: Json | null
+          id?: string
+          peer_comparison_data?: Json | null
+          recommendation?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          risk_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_assessments_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "refund_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_parameters: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          parameter_code: string
+          parameter_name: string
+          threshold_high: number | null
+          threshold_low: number | null
+          threshold_medium: number | null
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          parameter_code: string
+          parameter_name: string
+          threshold_high?: number | null
+          threshold_low?: number | null
+          threshold_medium?: number | null
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          parameter_code?: string
+          parameter_name?: string
+          threshold_high?: number | null
+          threshold_low?: number | null
+          threshold_medium?: number | null
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workflow_states: {
+        Row: {
+          action_by: string | null
+          action_type: string
+          claim_id: string
+          comments: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["claim_status"] | null
+          id: string
+          to_status: Database["public"]["Enums"]["claim_status"]
+        }
+        Insert: {
+          action_by?: string | null
+          action_type: string
+          claim_id: string
+          comments?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["claim_status"] | null
+          id?: string
+          to_status: Database["public"]["Enums"]["claim_status"]
+        }
+        Update: {
+          action_by?: string | null
+          action_type?: string
+          claim_id?: string
+          comments?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["claim_status"] | null
+          id?: string
+          to_status?: Database["public"]["Enums"]["claim_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_states_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "refund_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_claim_number: { Args: never; Returns: string }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "taxpayer"
+        | "officer"
+        | "supervisor"
+        | "risk_analyst"
+        | "auditor"
+        | "admin"
+      claim_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "risk_assessment"
+        | "officer_review"
+        | "supervisor_approval"
+        | "approved"
+        | "rejected"
+        | "payment_processing"
+        | "paid"
+      risk_level: "low" | "medium" | "high" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +595,28 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "taxpayer",
+        "officer",
+        "supervisor",
+        "risk_analyst",
+        "auditor",
+        "admin",
+      ],
+      claim_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "risk_assessment",
+        "officer_review",
+        "supervisor_approval",
+        "approved",
+        "rejected",
+        "payment_processing",
+        "paid",
+      ],
+      risk_level: ["low", "medium", "high", "critical"],
+    },
   },
 } as const
