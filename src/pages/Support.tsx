@@ -5,35 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import SupportChannels from "@/components/SupportChannels";
+import ClaimTrackingCard from "@/components/ClaimTrackingCard";
 
 const Support = () => {
-  const contactInfo = [
-    {
-      icon: Phone,
-      title: "Phone Support",
-      value: "+251 11 551 7788",
-      description: "Monday - Friday, 8:00 AM - 5:00 PM",
-    },
-    {
-      icon: Mail,
-      title: "Email Support",
-      value: "support@mor.gov.et",
-      description: "Response within 24-48 hours",
-    },
-    {
-      icon: MapPin,
-      title: "Head Office",
-      value: "Addis Ababa, Ethiopia",
-      description: "Mexico Square, Bole Road",
-    },
-    {
-      icon: Clock,
-      title: "Working Hours",
-      value: "8:00 AM - 5:00 PM",
-      description: "Monday to Friday (EAT)",
-    },
-  ];
-
   const faqs = [
     {
       question: "How long does it take to process a VAT refund claim?",
@@ -70,24 +45,39 @@ const Support = () => {
           </p>
         </div>
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { icon: MessageSquare, label: "Live Chat", desc: "Chat with us" },
-            { icon: FileQuestion, label: "FAQs", desc: "Common questions" },
-            { icon: BookOpen, label: "User Guide", desc: "Step-by-step help" },
-            { icon: ExternalLink, label: "Resources", desc: "Forms & docs" },
-          ].map((item, index) => (
-            <Card key={index} className="card-hover cursor-pointer group">
-              <CardContent className="p-4 text-center">
-                <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <item.icon className="h-5 w-5 text-primary" />
+        {/* Multi-channel Support */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Contact Us Instantly</h2>
+          <SupportChannels />
+        </div>
+
+        {/* Track Claim */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ClaimTrackingCard />
+          
+          {/* Quick Links */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-serif">Quick Links</CardTitle>
+              <CardDescription>Helpful resources and guides</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-3">
+              {[
+                { icon: MessageSquare, label: "Live Chat", desc: "Chat with us" },
+                { icon: FileQuestion, label: "FAQs", desc: "Common questions" },
+                { icon: BookOpen, label: "User Guide", desc: "Step-by-step help" },
+                { icon: ExternalLink, label: "Resources", desc: "Forms & docs" },
+              ].map((item, index) => (
+                <div key={index} className="p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-primary/5 cursor-pointer transition-colors">
+                  <div className="flex items-center gap-2">
+                    <item.icon className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">{item.label}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
                 </div>
-                <p className="font-medium text-foreground text-sm">{item.label}</p>
-                <p className="text-xs text-muted-foreground">{item.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
+              ))}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

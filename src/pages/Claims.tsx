@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Filter, Search } from "lucide-react";
 import Layout from "@/components/Layout";
-import RefundClaimForm from "@/components/RefundClaimForm";
+import EnhancedRefundClaimForm from "@/components/EnhancedRefundClaimForm";
 import RefundsTable from "@/components/RefundsTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,15 +47,15 @@ const Claims = () => {
                 New Claim
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+            <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="font-serif">Submit New Claim</SheetTitle>
                 <SheetDescription>
-                  Fill in the details below to submit a new VAT refund claim
+                  Verify your TIN and submit your VAT refund claim
                 </SheetDescription>
               </SheetHeader>
               <div className="mt-6">
-                <RefundClaimForm onSuccess={() => setIsFormOpen(false)} />
+                <EnhancedRefundClaimForm onSuccess={() => setIsFormOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
