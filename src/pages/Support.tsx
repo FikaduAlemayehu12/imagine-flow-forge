@@ -9,6 +9,33 @@ import SupportChannels from "@/components/SupportChannels";
 import ClaimTrackingCard from "@/components/ClaimTrackingCard";
 
 const Support = () => {
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: "Phone Support",
+      value: "+251 11 552 0000",
+      description: "Mon-Fri 8:30 AM - 5:30 PM EAT",
+    },
+    {
+      icon: Mail,
+      title: "Email Support",
+      value: "support@mor.gov.et",
+      description: "We respond within 24-48 hours",
+    },
+    {
+      icon: MapPin,
+      title: "Head Office",
+      value: "Addis Ababa, Ethiopia",
+      description: "Mexico Square, MoR Building",
+    },
+    {
+      icon: Clock,
+      title: "Business Hours",
+      value: "Mon-Fri: 8:30 AM - 5:30 PM",
+      description: "Closed on public holidays",
+    },
+  ];
+
   const faqs = [
     {
       question: "How long does it take to process a VAT refund claim?",

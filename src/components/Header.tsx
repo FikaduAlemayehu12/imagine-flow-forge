@@ -177,9 +177,11 @@ const Header = () => {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="h-4 w-4 mr-2" />
-                    Profile
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="h-4 w-4 mr-2" />
