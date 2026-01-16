@@ -10,8 +10,21 @@ import Claims from "./pages/Claims";
 import History from "./pages/History";
 import Notifications from "./pages/Notifications";
 import Support from "./pages/Support";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+
+// Admin pages
+import UserManagement from "./pages/admin/UserManagement";
+
+// Officer pages
+import ReviewClaims from "./pages/officer/ReviewClaims";
+
+// Supervisor pages
+import Approvals from "./pages/supervisor/Approvals";
+
+// Auditor pages
+import AuditQueue from "./pages/auditor/AuditQueue";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +77,55 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Admin Routes */}
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Officer Routes */}
+            <Route
+              path="/officer/review"
+              element={
+                <ProtectedRoute>
+                  <ReviewClaims />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Supervisor Routes */}
+            <Route
+              path="/supervisor/approval"
+              element={
+                <ProtectedRoute>
+                  <Approvals />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Auditor Routes */}
+            <Route
+              path="/auditor/queue"
+              element={
+                <ProtectedRoute>
+                  <AuditQueue />
+                </ProtectedRoute>
+              }
+            />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
