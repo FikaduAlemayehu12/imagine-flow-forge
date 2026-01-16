@@ -5,6 +5,17 @@ import { Button } from "@/components/ui/button";
 const SupportChannels = () => {
   const channels = [
     {
+      icon: Phone,
+      name: "Toll-Free",
+      description: "Call us free of charge",
+      primary: "8199",
+      color: "bg-[hsl(145,70%,40%)]",
+      links: [
+        { label: "8199", url: "tel:8199" },
+      ],
+      featured: true,
+    },
+    {
       icon: Send,
       name: "Telegram",
       description: "Chat with us on Telegram",
