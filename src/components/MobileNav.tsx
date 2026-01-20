@@ -11,46 +11,56 @@ interface NavItem {
 }
 
 const getMobileNavItems = (role: AppRole, unreadCount: number): NavItem[] => {
-  const baseItems = [
-    { icon: Home, label: "Home", path: "/" },
-  ];
-
   switch (role) {
+    case "taxpayer":
+      // Taxpayers only: Apply Refund and Track Status
+      return [
+        { icon: Home, label: "Home", path: "/" },
+        { icon: FileText, label: "Apply", path: "/claims" },
+        { icon: HelpCircle, label: "Track", path: "/support" },
+      ];
     case "officer":
       return [
-        ...baseItems,
+        { icon: Home, label: "Home", path: "/" },
         { icon: FileText, label: "Review", path: "/officer/review" },
+        { icon: Clock, label: "History", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
-        { icon: HelpCircle, label: "Support", path: "/support" },
       ];
     case "supervisor":
       return [
-        ...baseItems,
+        { icon: Home, label: "Home", path: "/" },
         { icon: ShieldCheck, label: "Approve", path: "/supervisor/approval" },
+        { icon: Clock, label: "History", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
-        { icon: HelpCircle, label: "Support", path: "/support" },
       ];
     case "auditor":
       return [
-        ...baseItems,
+        { icon: Home, label: "Home", path: "/" },
         { icon: ClipboardCheck, label: "Audit", path: "/auditor/queue" },
+        { icon: Clock, label: "History", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
-        { icon: HelpCircle, label: "Support", path: "/support" },
       ];
     case "admin":
+      // Admin has full access
       return [
-        ...baseItems,
-        { icon: FileText, label: "Claims", path: "/admin/claims" },
-        { icon: Settings, label: "Settings", path: "/admin/settings" },
+        { icon: Home, label: "Home", path: "/" },
+        { icon: Settings, label: "Users", path: "/admin/users" },
+        { icon: FileText, label: "Claims", path: "/claims" },
+        { icon: Clock, label: "History", path: "/history" },
+        { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
+      ];
+    case "risk_analyst":
+      return [
+        { icon: Home, label: "Home", path: "/" },
+        { icon: FileText, label: "Review", path: "/officer/review" },
+        { icon: Clock, label: "History", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
       ];
     default:
       return [
-        ...baseItems,
-        { icon: FileText, label: "Claims", path: "/claims" },
-        { icon: Clock, label: "History", path: "/history" },
-        { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
-        { icon: HelpCircle, label: "Support", path: "/support" },
+        { icon: Home, label: "Home", path: "/" },
+        { icon: FileText, label: "Apply", path: "/claims" },
+        { icon: HelpCircle, label: "Track", path: "/support" },
       ];
   }
 };
