@@ -20,17 +20,19 @@ const getMobileNavItems = (role: AppRole, unreadCount: number): NavItem[] => {
         { icon: HelpCircle, label: "Track", path: "/support" },
       ];
     case "officer":
+      // Officers review and assign claims
       return [
         { icon: Home, label: "Home", path: "/" },
         { icon: FileText, label: "Review", path: "/officer/review" },
-        { icon: Clock, label: "History", path: "/history" },
+        { icon: Clock, label: "All Claims", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
       ];
     case "supervisor":
+      // Supervisors view all statuses (read-only)
       return [
         { icon: Home, label: "Home", path: "/" },
-        { icon: ShieldCheck, label: "Approve", path: "/supervisor/approval" },
-        { icon: Clock, label: "History", path: "/history" },
+        { icon: ShieldCheck, label: "View", path: "/supervisor/approval" },
+        { icon: Clock, label: "Status", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
       ];
     case "auditor":
@@ -41,18 +43,18 @@ const getMobileNavItems = (role: AppRole, unreadCount: number): NavItem[] => {
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
       ];
     case "admin":
-      // Admin has full access
+      // Admin has full control
       return [
         { icon: Home, label: "Home", path: "/" },
         { icon: Settings, label: "Users", path: "/admin/users" },
-        { icon: FileText, label: "Claims", path: "/claims" },
-        { icon: Clock, label: "History", path: "/history" },
+        { icon: FileText, label: "Claims", path: "/officer/review" },
+        { icon: Clock, label: "Reports", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
       ];
     case "risk_analyst":
       return [
         { icon: Home, label: "Home", path: "/" },
-        { icon: FileText, label: "Review", path: "/officer/review" },
+        { icon: FileText, label: "Risk", path: "/officer/review" },
         { icon: Clock, label: "History", path: "/history" },
         { icon: Bell, label: "Alerts", path: "/notifications", badge: unreadCount },
       ];

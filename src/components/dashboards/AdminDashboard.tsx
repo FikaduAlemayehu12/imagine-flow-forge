@@ -1,4 +1,4 @@
-import { Settings, Users, TrendingUp, AlertTriangle, ArrowRight, Loader2, Database, Shield, BarChart3 } from "lucide-react";
+import { Settings, Users, TrendingUp, AlertTriangle, ArrowRight, Loader2, Database, Shield, FileSearch, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import StatusCard from "@/components/StatusCard";
 import { useClaimsStats } from "@/hooks/useStaffClaims";
@@ -20,10 +20,10 @@ const AdminDashboard = () => {
   };
 
   const quickActions = [
-    { icon: Users, title: "User Management", description: "Manage staff accounts", href: "/admin/users" },
-    { icon: Settings, title: "System Config", description: "Platform settings", href: "/admin/settings" },
-    { icon: BarChart3, title: "Analytics", description: "System-wide reports", href: "/admin/analytics" },
-    { icon: Shield, title: "Security", description: "Audit logs & access", href: "/admin/security" },
+    { icon: Users, title: "User Management", description: "Manage all users & roles", href: "/admin/users", color: "rose" },
+    { icon: FileSearch, title: "All Claims", description: "View & manage claims", href: "/officer/review", color: "blue" },
+    { icon: UserPlus, title: "Assign Officers", description: "Delegate tasks", href: "/history", color: "emerald" },
+    { icon: Shield, title: "System Control", description: "Full access", href: "/admin/security", color: "purple" },
   ];
 
   return (
@@ -39,7 +39,7 @@ const AdminDashboard = () => {
               Administrator Dashboard
             </h2>
             <p className="text-muted-foreground">
-              Welcome, {user?.user_metadata?.full_name || "Administrator"}
+              Welcome, {user?.user_metadata?.full_name || "Administrator"} — <span className="text-rose-600 font-medium">Full System Control</span>
             </p>
           </div>
         </div>
@@ -52,8 +52,8 @@ const AdminDashboard = () => {
             <Link key={index} to={action.href}>
               <Card className="border-border card-hover cursor-pointer group h-full">
                 <CardContent className="p-3 md:p-4 text-center">
-                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
-                    <action.icon className="h-5 w-5 md:h-6 md:w-6 text-rose-600" />
+                  <div className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-lg bg-${action.color}-50 flex items-center justify-center group-hover:bg-${action.color}-100 transition-colors`}>
+                    <action.icon className={`h-5 w-5 md:h-6 md:w-6 text-${action.color}-600`} />
                   </div>
                   <h3 className="font-medium text-foreground text-xs md:text-sm mb-0.5 md:mb-1">{action.title}</h3>
                   <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">{action.description}</p>
@@ -115,16 +115,16 @@ const AdminDashboard = () => {
         )}
       </section>
 
-      {/* All Recent Claims */}
+      {/* All Claims with Full Actions */}
       <div className="animate-slide-up" style={{ animationDelay: "0.35s" }}>
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="font-serif">All Claims</CardTitle>
-                <CardDescription>Complete system overview</CardDescription>
+                <CardTitle className="font-serif">All Claims (Full Control)</CardTitle>
+                <CardDescription>Manage all claims - approve, reject, assign, and process</CardDescription>
               </div>
-              <Link to="/admin/claims">
+              <Link to="/officer/review">
                 <Button variant="outline" size="sm">
                   View All <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -132,9 +132,10 @@ const AdminDashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
+            {/* Admin has showActions TRUE - full control */}
             <StaffClaimsTable 
               statuses={["submitted", "under_review", "risk_assessment", "officer_review", "supervisor_approval", "approved", "rejected", "paid"]} 
-              limit={10}
+              limit={15}
               showActions={true}
             />
           </CardContent>

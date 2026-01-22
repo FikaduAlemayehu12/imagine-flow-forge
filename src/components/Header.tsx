@@ -23,49 +23,45 @@ interface NavLink {
 const getNavLinks = (role: AppRole): NavLink[] => {
   switch (role) {
     case "taxpayer":
-      // Taxpayers only see: Apply Refund and Track Status
+      // Taxpayers only see: Dashboard, Apply Refund, and Track Status
       return [
         { href: "/", label: "Dashboard" },
         { href: "/claims", label: "Apply Refund" },
         { href: "/support", label: "Track Status" },
       ];
     case "officer":
+      // Officers can review claims and assign to others
       return [
         { href: "/", label: "Dashboard" },
         { href: "/officer/review", label: "Review Claims" },
-        { href: "/history", label: "History" },
-        { href: "/support", label: "Support" },
+        { href: "/history", label: "All Claims" },
       ];
     case "supervisor":
+      // Supervisors view all statuses (read-only overview)
       return [
         { href: "/", label: "Dashboard" },
-        { href: "/supervisor/approval", label: "Approvals" },
-        { href: "/history", label: "History" },
-        { href: "/support", label: "Support" },
+        { href: "/supervisor/approval", label: "View Claims" },
+        { href: "/history", label: "All Status" },
       ];
     case "auditor":
       return [
         { href: "/", label: "Dashboard" },
         { href: "/auditor/queue", label: "Audit Queue" },
         { href: "/history", label: "History" },
-        { href: "/support", label: "Support" },
       ];
     case "admin":
-      // Admin has full access to everything
+      // Admin has full control over everything
       return [
         { href: "/", label: "Dashboard" },
-        { href: "/admin/users", label: "Users" },
-        { href: "/claims", label: "Claims" },
-        { href: "/history", label: "History" },
-        { href: "/notifications", label: "Notifications" },
-        { href: "/support", label: "Support" },
+        { href: "/admin/users", label: "User Management" },
+        { href: "/officer/review", label: "All Claims" },
+        { href: "/history", label: "Reports" },
       ];
     case "risk_analyst":
       return [
         { href: "/", label: "Dashboard" },
-        { href: "/officer/review", label: "Review Claims" },
+        { href: "/officer/review", label: "Risk Analysis" },
         { href: "/history", label: "History" },
-        { href: "/support", label: "Support" },
       ];
     default:
       return [{ href: "/", label: "Dashboard" }];

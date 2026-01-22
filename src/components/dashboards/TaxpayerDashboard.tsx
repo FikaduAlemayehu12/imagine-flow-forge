@@ -1,111 +1,108 @@
-import { DollarSign, Clock, CheckCircle2, XCircle, ArrowRight, Loader2 } from "lucide-react";
+import { FileText, Search, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import StatusCard from "@/components/StatusCard";
-import RefundClaimForm from "@/components/RefundClaimForm";
-import RefundsTable from "@/components/RefundsTable";
-import QuickActions from "@/components/QuickActions";
-import { useRefundStats } from "@/hooks/useRefundClaims";
 import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const TaxpayerDashboard = () => {
-  const { stats, isLoading } = useRefundStats();
   const { user } = useAuth();
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-ET", {
-      style: "currency",
-      currency: "ETB",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
-    <>
+    <div className="min-h-[60vh] flex flex-col items-center justify-center py-8 px-4">
       {/* Welcome Section */}
-      <div className="mb-6 animate-fade-in">
-        <h2 className="text-2xl md:text-3xl font-serif font-bold text-foreground mb-2">
-          Welcome Back{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ""}
-        </h2>
-        <p className="text-muted-foreground">
-          Track your VAT refund claims and manage your tax records
+      <div className="text-center mb-10 animate-fade-in max-w-2xl">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+          <span className="text-4xl">🇪🇹</span>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
+          Welcome to Ministry of Revenues
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          VAT & Tax Refund System
         </p>
-      </div>
-
-      {/* Quick Actions */}
-      <section className="mb-6 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-        <QuickActions />
-      </section>
-
-      {/* Status Overview Cards */}
-      <section className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground">Refund Status Overview</h3>
-          <Link to="/history">
-            <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-              View History <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-          </Link>
-        </div>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <div className="animate-slide-up" style={{ animationDelay: "0.15s" }}>
-              <StatusCard
-                title="Total Claims"
-                value={stats.totalClaims}
-                subtitle="All time submissions"
-                icon={DollarSign}
-                variant="default"
-              />
-            </div>
-            <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              <StatusCard
-                title="Pending Review"
-                value={stats.pendingReview}
-                subtitle="Awaiting approval"
-                icon={Clock}
-                variant="warning"
-              />
-            </div>
-            <div className="animate-slide-up" style={{ animationDelay: "0.25s" }}>
-              <StatusCard
-                title="Approved"
-                value={stats.approved}
-                subtitle={formatCurrency(stats.totalApprovedAmount)}
-                icon={CheckCircle2}
-                variant="success"
-              />
-            </div>
-            <div className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
-              <StatusCard
-                title="Rejected"
-                value={stats.rejected}
-                subtitle="Review required"
-                icon={XCircle}
-                variant="danger"
-              />
-            </div>
-          </div>
+        {user?.user_metadata?.full_name && (
+          <p className="text-muted-foreground mt-2">
+            Hello, <span className="font-medium text-foreground">{user.user_metadata.full_name}</span>
+          </p>
         )}
-      </section>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Refunds Table - Takes 2 columns */}
-        <div className="lg:col-span-2 animate-slide-up" style={{ animationDelay: "0.35s" }}>
-          <RefundsTable limit={5} />
-        </div>
-
-        {/* Submit Claim Form - Takes 1 column */}
-        <div className="animate-slide-up" style={{ animationDelay: "0.4s" }}>
-          <RefundClaimForm />
-        </div>
       </div>
-    </>
+
+      {/* Two Main Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl animate-slide-up" style={{ animationDelay: "0.1s" }}>
+        {/* Apply Refund Card */}
+        <Link to="/claims" className="block">
+          <Card className="h-full border-border card-hover cursor-pointer group transition-all hover:border-primary/50 hover:shadow-lg">
+            <CardHeader className="pb-4">
+              <div className="w-16 h-16 mb-4 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <FileText className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle className="font-serif text-xl">Apply for Refund</CardTitle>
+              <CardDescription className="text-base">
+                Submit your VAT refund claim with TIN verification
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-muted-foreground mb-4">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Enter your 10-digit TIN number
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Verify with OTP (SMS/Email)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Submit claim with supporting documents
+                </li>
+              </ul>
+              <Button className="w-full group-hover:bg-primary/90">
+                Start Application <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Track Status Card */}
+        <Link to="/support" className="block">
+          <Card className="h-full border-border card-hover cursor-pointer group transition-all hover:border-primary/50 hover:shadow-lg">
+            <CardHeader className="pb-4">
+              <div className="w-16 h-16 mb-4 rounded-xl bg-secondary/50 flex items-center justify-center group-hover:bg-secondary/70 transition-colors">
+                <Search className="h-8 w-8 text-secondary-foreground" />
+              </div>
+              <CardTitle className="font-serif text-xl">Track Claim Status</CardTitle>
+              <CardDescription className="text-base">
+                Check the progress of your refund application
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-muted-foreground mb-4">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-foreground/50"></span>
+                  Enter your tracking number
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-foreground/50"></span>
+                  View real-time status updates
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-foreground/50"></span>
+                  Download tracking receipt (PDF)
+                </li>
+              </ul>
+              <Button variant="secondary" className="w-full">
+                Track Now <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Help Text */}
+      <p className="text-center text-sm text-muted-foreground mt-8 max-w-md animate-fade-in" style={{ animationDelay: "0.2s" }}>
+        Need help? Contact our support team at <span className="font-medium">+251 11 552 0000</span> or visit any Ministry of Revenues office.
+      </p>
+    </div>
   );
 };
 
