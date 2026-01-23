@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogIn, UserPlus, Shield, CheckCircle2 } from "lucide-react";
+import { Loader2, LogIn, UserPlus, Shield, CheckCircle2, Building2, Users } from "lucide-react";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
@@ -26,6 +26,7 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loginType, setLoginType] = useState<"staff" | "taxpayer">("staff");
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -182,6 +183,28 @@ const Auth = () => {
             </div>
           </div>
 
+          {/* Login Type Selector */}
+          <div className="w-full max-w-md mb-6">
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={loginType === "staff" ? "default" : "outline"}
+                className="h-14 flex-col gap-1"
+                onClick={() => setLoginType("staff")}
+              >
+                <Building2 className="h-5 w-5" />
+                <span className="text-xs">Staff Portal</span>
+              </Button>
+              <Button
+                variant={loginType === "taxpayer" ? "default" : "outline"}
+                className="h-14 flex-col gap-1"
+                onClick={() => setLoginType("taxpayer")}
+              >
+                <Users className="h-5 w-5" />
+                <span className="text-xs">Taxpayer Portal</span>
+              </Button>
+            </div>
+          </div>
+
           <Card className="w-full max-w-md border-border shadow-xl">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-12">
@@ -191,9 +214,14 @@ const Auth = () => {
               
               <TabsContent value="login">
                 <CardHeader className="space-y-1 pb-4">
-                  <CardTitle className="text-2xl font-serif">Welcome back</CardTitle>
+                  <CardTitle className="text-2xl font-serif">
+                    {loginType === "staff" ? "Staff Login" : "Taxpayer Login"}
+                  </CardTitle>
                   <CardDescription>
-                    Enter your credentials to access your account
+                    {loginType === "staff" 
+                      ? "Enter your staff credentials to access the system"
+                      : "Sign in to manage your VAT refund claims"
+                    }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -203,7 +231,7 @@ const Auth = () => {
                       <Input
                         id="login-email"
                         type="email"
-                        placeholder="name@example.com"
+                        placeholder={loginType === "staff" ? "staff@mor.gov.et" : "your@email.com"}
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         disabled={isLoading}
@@ -237,72 +265,98 @@ const Auth = () => {
                       Sign In
                     </Button>
                   </form>
+                  
+                  {loginType === "staff" && (
+                    <div className="mt-4 p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-2">Demo Accounts:</p>
+                      <div className="text-xs space-y-1">
+                        <p><strong>Admin:</strong> admin@mor.gov.com</p>
+                        <p><strong>Officer:</strong> admin@mor.gov.et</p>
+                        <p><strong>Supervisor:</strong> moradmin@mor.gov.et</p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </TabsContent>
               
               <TabsContent value="signup">
                 <CardHeader className="space-y-1 pb-4">
-                  <CardTitle className="text-2xl font-serif">Create account</CardTitle>
+                  <CardTitle className="text-2xl font-serif">
+                    {loginType === "staff" ? "Staff Registration" : "Create Taxpayer Account"}
+                  </CardTitle>
                   <CardDescription>
-                    Register to start managing your VAT refunds
+                    {loginType === "staff" 
+                      ? "Contact your administrator for staff account creation"
+                      : "Register to start managing your VAT refunds"
+                    }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Full Name</Label>
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="Abebe Kebede"
-                        value={signupName}
-                        onChange={(e) => setSignupName(e.target.value)}
-                        disabled={isLoading}
-                        className="h-11"
-                      />
-                      {errors.signupName && (
-                        <p className="text-sm text-destructive">{errors.signupName}</p>
-                      )}
+                  {loginType === "staff" ? (
+                    <div className="text-center py-8">
+                      <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        Staff accounts are managed by system administrators.
+                        Please contact your supervisor for access.
+                      </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="name@example.com"
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        disabled={isLoading}
-                        className="h-11"
-                      />
-                      {errors.signupEmail && (
-                        <p className="text-sm text-destructive">{errors.signupEmail}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        disabled={isLoading}
-                        className="h-11"
-                      />
-                      {errors.signupPassword && (
-                        <p className="text-sm text-destructive">{errors.signupPassword}</p>
-                      )}
-                    </div>
-                    <Button type="submit" className="w-full h-11 text-base" disabled={isLoading}>
-                      {isLoading ? (
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      ) : (
-                        <UserPlus className="h-5 w-5 mr-2" />
-                      )}
-                      Create Account
-                    </Button>
-                  </form>
+                  ) : (
+                    <form onSubmit={handleSignup} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-name">Full Name</Label>
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Abebe Kebede"
+                          value={signupName}
+                          onChange={(e) => setSignupName(e.target.value)}
+                          disabled={isLoading}
+                          className="h-11"
+                        />
+                        {errors.signupName && (
+                          <p className="text-sm text-destructive">{errors.signupName}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-email">Email</Label>
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="name@example.com"
+                          value={signupEmail}
+                          onChange={(e) => setSignupEmail(e.target.value)}
+                          disabled={isLoading}
+                          className="h-11"
+                        />
+                        {errors.signupEmail && (
+                          <p className="text-sm text-destructive">{errors.signupEmail}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-password">Password</Label>
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={signupPassword}
+                          onChange={(e) => setSignupPassword(e.target.value)}
+                          disabled={isLoading}
+                          className="h-11"
+                        />
+                        {errors.signupPassword && (
+                          <p className="text-sm text-destructive">{errors.signupPassword}</p>
+                        )}
+                      </div>
+                      <Button type="submit" className="w-full h-11 text-base" disabled={isLoading}>
+                        {isLoading ? (
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        ) : (
+                          <UserPlus className="h-5 w-5 mr-2" />
+                        )}
+                        Create Taxpayer Account
+                      </Button>
+                    </form>
+                  )}
                 </CardContent>
               </TabsContent>
             </Tabs>

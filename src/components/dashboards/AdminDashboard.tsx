@@ -1,4 +1,4 @@
-import { Settings, Users, TrendingUp, AlertTriangle, ArrowRight, Loader2, Database, Shield, FileSearch, UserPlus } from "lucide-react";
+import { Settings, Users, TrendingUp, AlertTriangle, ArrowRight, Loader2, Database, Shield, FileSearch, UserPlus, Image, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 import StatusCard from "@/components/StatusCard";
 import { useClaimsStats } from "@/hooks/useStaffClaims";
@@ -22,8 +22,13 @@ const AdminDashboard = () => {
   const quickActions = [
     { icon: Users, title: "User Management", description: "Manage all users & roles", href: "/admin/users", color: "rose" },
     { icon: FileSearch, title: "All Claims", description: "View & manage claims", href: "/officer/review", color: "blue" },
-    { icon: UserPlus, title: "Assign Officers", description: "Delegate tasks", href: "/history", color: "emerald" },
-    { icon: Shield, title: "System Control", description: "Full access", href: "/admin/security", color: "purple" },
+    { icon: UserPlus, title: "Add Officers", description: "Create staff accounts", href: "/admin/users", color: "emerald" },
+    { icon: Shield, title: "System Control", description: "Full access", href: "/profile", color: "purple" },
+  ];
+
+  const adminControls = [
+    { icon: Image, title: "Change Logo", description: "Update MoR branding", action: "logo" },
+    { icon: Edit, title: "Edit Profiles", description: "Modify user info", action: "profiles" },
   ];
 
   return (
@@ -64,6 +69,60 @@ const AdminDashboard = () => {
         </div>
       </section>
 
+      {/* Admin Controls Section */}
+      <section className="mb-6 animate-slide-up" style={{ animationDelay: "0.15s" }}>
+        <Card className="border-rose-200 bg-rose-50/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="font-serif text-rose-800 flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Admin Controls
+            </CardTitle>
+            <CardDescription>Advanced system settings and customization</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {adminControls.map((control, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  className="h-auto py-4 flex-col gap-2 border-rose-200 hover:bg-rose-100"
+                >
+                  <control.icon className="h-5 w-5 text-rose-600" />
+                  <div className="text-center">
+                    <p className="font-medium text-sm">{control.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{control.description}</p>
+                  </div>
+                </Button>
+              ))}
+              <Link to="/admin/users">
+                <Button
+                  variant="outline"
+                  className="h-full w-full py-4 flex-col gap-2 border-rose-200 hover:bg-rose-100"
+                >
+                  <UserPlus className="h-5 w-5 text-rose-600" />
+                  <div className="text-center">
+                    <p className="font-medium text-sm">Manage Roles</p>
+                    <p className="text-[10px] text-muted-foreground">Add/remove officers</p>
+                  </div>
+                </Button>
+              </Link>
+              <Link to="/profile">
+                <Button
+                  variant="outline"
+                  className="h-full w-full py-4 flex-col gap-2 border-rose-200 hover:bg-rose-100"
+                >
+                  <Edit className="h-5 w-5 text-rose-600" />
+                  <div className="text-center">
+                    <p className="font-medium text-sm">Edit Credentials</p>
+                    <p className="text-[10px] text-muted-foreground">Name, email, password</p>
+                  </div>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
       {/* Status Overview Cards */}
       <section className="mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -75,7 +134,7 @@ const AdminDashboard = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <div className="animate-slide-up" style={{ animationDelay: "0.15s" }}>
+            <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
               <StatusCard
                 title="Total Claims"
                 value={stats.total}
@@ -84,7 +143,7 @@ const AdminDashboard = () => {
                 variant="default"
               />
             </div>
-            <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            <div className="animate-slide-up" style={{ animationDelay: "0.25s" }}>
               <StatusCard
                 title="In Progress"
                 value={stats.submitted + stats.underReview + stats.officerReview + stats.supervisorApproval}
@@ -93,7 +152,7 @@ const AdminDashboard = () => {
                 variant="warning"
               />
             </div>
-            <div className="animate-slide-up" style={{ animationDelay: "0.25s" }}>
+            <div className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
               <StatusCard
                 title="Completed"
                 value={stats.approved + stats.paid}
@@ -102,7 +161,7 @@ const AdminDashboard = () => {
                 variant="success"
               />
             </div>
-            <div className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
+            <div className="animate-slide-up" style={{ animationDelay: "0.35s" }}>
               <StatusCard
                 title="Rejected"
                 value={stats.rejected}
@@ -116,7 +175,7 @@ const AdminDashboard = () => {
       </section>
 
       {/* All Claims with Full Actions */}
-      <div className="animate-slide-up" style={{ animationDelay: "0.35s" }}>
+      <div className="animate-slide-up" style={{ animationDelay: "0.4s" }}>
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
