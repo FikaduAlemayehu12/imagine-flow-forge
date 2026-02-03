@@ -13,26 +13,26 @@ const Support = () => {
     {
       icon: Phone,
       title: "Phone Support",
-      value: "+251 11 552 0000",
-      description: "Mon-Fri 8:30 AM - 5:30 PM EAT",
+      value: "+251 11 662 98 00",
+      description: "P.O. Box: 2559 Addis Ababa, Ethiopia",
     },
     {
       icon: Mail,
       title: "Email Support",
-      value: "support@mor.gov.et",
+      value: "info.mor@mor.gov.et",
       description: "We respond within 24-48 hours",
     },
     {
       icon: MapPin,
       title: "Head Office",
       value: "Addis Ababa, Ethiopia",
-      description: "Mexico Square, MoR Building",
+      description: "Megenagna 24 condominium near to Lancet Hospital, MoR Building",
     },
     {
       icon: Clock,
       title: "Business Hours",
-      value: "Mon-Fri: 8:30 AM - 5:30 PM",
-      description: "Closed on public holidays",
+      value: "Mon-Fri: 2:00-11:00 | Sat: ከ2:00-6:00",
+      description: "Local Time • Closed on public holidays",
     },
   ];
 
