@@ -1,14 +1,22 @@
 import { useState } from "react";
-import { Search, Copy, CheckCircle2, Clock, FileText, Download, Loader2 } from "lucide-react";
+import { Search, Copy, Clock, Download, Loader2, AlertTriangle, CheckCircle2, AlertCircle, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { generateClaimPDF } from "@/lib/pdfGenerator";
+import { Badge } from "@/components/ui/badge";
 
 interface ClaimTrackingCardProps {
   showSearch?: boolean;
+}
+
+interface RiskAssessment {
+  risk_level: "low" | "medium" | "high" | "critical";
+  risk_score: number;
+  recommendation: string | null;
+  assessment_details: any;
 }
 
 const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
@@ -16,6 +24,7 @@ const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
   const [trackingCode, setTrackingCode] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [claimData, setClaimData] = useState<any>(null);
+  const [riskAssessment, setRiskAssessment] = useState<RiskAssessment | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handleSearch = async () => {
@@ -41,6 +50,17 @@ const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
 
       if (data) {
         setClaimData(data);
+        
+        // Fetch risk assessment for this claim
+        const { data: riskData } = await supabase
+          .from("risk_assessments")
+          .select("risk_level, risk_score, recommendation, assessment_details")
+          .eq("claim_id", data.id)
+          .order("assessed_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        setRiskAssessment(riskData);
       } else {
         toast({
           title: "Claim Not Found",
@@ -48,6 +68,7 @@ const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
           variant: "destructive",
         });
         setClaimData(null);
+        setRiskAssessment(null);
       }
     } catch (error) {
       toast({
@@ -118,6 +139,86 @@ const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
     return labels[status] || status;
   };
 
+  const getRiskLevelBadge = (level: string) => {
+    const config: Record<string, { icon: any; className: string; label: string }> = {
+      low: {
+        icon: ShieldCheck,
+        className: "bg-green-100 text-green-700 border-green-200",
+        label: "Low Risk",
+      },
+      medium: {
+        icon: AlertCircle,
+        className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+        label: "Medium Risk",
+      },
+      high: {
+        icon: AlertTriangle,
+        className: "bg-orange-100 text-orange-700 border-orange-200",
+        label: "High Risk",
+      },
+      critical: {
+        icon: AlertTriangle,
+        className: "bg-red-100 text-red-700 border-red-200",
+        label: "Critical Risk",
+      },
+    };
+
+    const { icon: Icon, className, label } = config[level] || config.medium;
+
+    return (
+      <Badge variant="outline" className={`${className} flex items-center gap-1`}>
+        <Icon className="h-3 w-3" />
+        {label}
+      </Badge>
+    );
+  };
+
+  const getApprovalMessage = (status: string, riskLevel?: string) => {
+    if (status === "approved" || status === "paid") {
+      return {
+        icon: CheckCircle2,
+        title: "Claim Approved",
+        message: riskLevel === "low" 
+          ? "Your claim passed all verification checks with a low risk assessment."
+          : "Your claim has been reviewed and approved by the supervisor.",
+        className: "bg-green-50 border-green-200 text-green-800",
+      };
+    }
+    
+    if (status === "rejected") {
+      return {
+        icon: AlertTriangle,
+        title: "Claim Rejected",
+        message: "Your claim could not be approved. Please review the requirements and ensure all documentation is complete.",
+        className: "bg-red-50 border-red-200 text-red-800",
+      };
+    }
+
+    if (riskLevel === "high" || riskLevel === "critical") {
+      return {
+        icon: AlertCircle,
+        title: "Additional Review Required",
+        message: "Your claim requires additional documentation or senior review due to elevated risk assessment.",
+        className: "bg-orange-50 border-orange-200 text-orange-800",
+      };
+    }
+
+    if (riskLevel === "medium") {
+      return {
+        icon: Clock,
+        title: "Standard Review",
+        message: "Your claim is undergoing standard review process.",
+        className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+      };
+    }
+
+    return null;
+  };
+
+  const statusMessage = claimData 
+    ? getApprovalMessage(claimData.status, riskAssessment?.risk_level)
+    : null;
+
   return (
     <Card>
       <CardHeader>
@@ -151,6 +252,19 @@ const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
 
         {claimData && (
           <div className="space-y-4 animate-fade-in">
+            {/* Status Message Card */}
+            {statusMessage && (
+              <div className={`rounded-lg border p-4 ${statusMessage.className}`}>
+                <div className="flex items-start gap-3">
+                  <statusMessage.icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-sm">{statusMessage.title}</h4>
+                    <p className="text-sm mt-1 opacity-90">{statusMessage.message}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="bg-muted/30 rounded-lg p-4 space-y-3">
               {/* Tracking Code */}
               <div className="flex items-center justify-between">
@@ -175,6 +289,24 @@ const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
                   {getStatusLabel(claimData.status)}
                 </span>
               </div>
+
+              {/* Risk Level (if available) */}
+              {riskAssessment && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Risk Assessment</span>
+                  {getRiskLevelBadge(riskAssessment.risk_level)}
+                </div>
+              )}
+
+              {/* Risk Score (if available) */}
+              {riskAssessment && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Risk Score</span>
+                  <span className="font-medium text-sm">
+                    {riskAssessment.risk_score.toFixed(0)}/100
+                  </span>
+                </div>
+              )}
 
               {/* Amount */}
               <div className="flex items-center justify-between">
@@ -206,6 +338,17 @@ const ClaimTrackingCard = ({ showSearch = true }: ClaimTrackingCardProps) => {
                 </span>
               </div>
             </div>
+
+            {/* Recommendation (for rejected or high risk) */}
+            {riskAssessment?.recommendation && 
+             (claimData.status === "rejected" || riskAssessment.risk_level === "high" || riskAssessment.risk_level === "critical") && (
+              <div className="bg-muted/50 rounded-lg p-3 border border-border">
+                <h5 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
+                  Recommendation
+                </h5>
+                <p className="text-sm">{riskAssessment.recommendation}</p>
+              </div>
+            )}
 
             {/* Download PDF */}
             <Button
