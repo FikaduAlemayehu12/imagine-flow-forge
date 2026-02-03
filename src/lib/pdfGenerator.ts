@@ -178,7 +178,7 @@ export const generateClaimPDF = async (claim: RefundClaim) => {
     { align: "center" }
   );
   doc.text(
-    "For inquiries, contact: support@mor.gov.et | +251 11 551 7788",
+    "For inquiries: info.mor@mor.gov.et | +251 11 662 98 00 | P.O. Box 2559",
     pageWidth / 2,
     footerY + 17,
     { align: "center" }
@@ -230,8 +230,8 @@ export const generateTrackingCodePDF = async (claimNumber: string, submittedDate
 
   // Footer
   doc.setFontSize(6);
-  doc.text("Keep this code for tracking your claim", pageWidth / 2, 50, { align: "center" });
-  doc.text("Ministry of Revenues, Ethiopia", pageWidth / 2, 55, { align: "center" });
+  doc.text("Keep this code for tracking your claim", pageWidth / 2, 48, { align: "center" });
+  doc.text("MoR - info.mor@mor.gov.et | +251 11 662 98 00", pageWidth / 2, 53, { align: "center" });
 
   doc.save(`TrackingCode-${claimNumber}.pdf`);
 };
