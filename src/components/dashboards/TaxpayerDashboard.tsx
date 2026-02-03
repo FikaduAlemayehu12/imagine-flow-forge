@@ -100,7 +100,7 @@ const TaxpayerDashboard = () => {
 
       {/* Help Text */}
       <p className="text-center text-sm text-muted-foreground mt-8 max-w-md animate-fade-in" style={{ animationDelay: "0.2s" }}>
-        Need help? Contact our support team at <span className="font-medium">+251 11 552 0000</span> or visit any Ministry of Revenues office.
+        Need help? Contact our support team at <span className="font-medium">+251 11 662 98 00</span> or email <span className="font-medium">info.mor@mor.gov.et</span>
       </p>
     </div>
   );
