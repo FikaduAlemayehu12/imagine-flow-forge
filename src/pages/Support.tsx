@@ -107,6 +107,31 @@ const Support = () => {
           </Card>
         </div>
 
+        {/* Office Location Map */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-serif">Our Location</CardTitle>
+            <CardDescription>Visit us at Megenagna, Addis Ababa</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-[300px] rounded-lg overflow-hidden border border-border">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.5!2d38.8!3d9.0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85cef5ab402d%3A0x8467b6b037a24d49!2sMegenagna%2C%20Addis%20Ababa%2C%20Ethiopia!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="MoR Office Location - Megenagna, Addis Ababa"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground mt-3">
+              📍 Megenagna 24 Condominium, near Lancet Hospital, Addis Ababa
+            </p>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Contact Information */}
           <Card>
