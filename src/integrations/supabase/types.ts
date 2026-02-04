@@ -457,6 +457,8 @@ export type Database = {
         | "risk_analyst"
         | "auditor"
         | "admin"
+        | "super_admin"
+        | "branch_staff"
       claim_status:
         | "draft"
         | "submitted"
@@ -603,6 +605,8 @@ export const Constants = {
         "risk_analyst",
         "auditor",
         "admin",
+        "super_admin",
+        "branch_staff",
       ],
       claim_status: [
         "draft",
