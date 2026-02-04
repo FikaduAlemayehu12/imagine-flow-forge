@@ -53,6 +53,45 @@ export type Database = {
         }
         Relationships: []
       }
+      branches: {
+        Row: {
+          address: string | null
+          branch_code: string
+          branch_name: string
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean | null
+          phone: string | null
+          region: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          branch_code: string
+          branch_name: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          region?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          branch_code?: string
+          branch_name?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          region?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       category_benchmarks: {
         Row: {
           avg_approval_rate: number | null
@@ -91,6 +130,54 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      claim_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          branch_id: string
+          claim_id: string
+          completed_at: string | null
+          id: string
+          notes: string | null
+          status: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          branch_id: string
+          claim_id: string
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          branch_id?: string
+          claim_id?: string
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_assignments_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_assignments_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: true
+            referencedRelation: "refund_claims"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       claim_documents: {
         Row: {
@@ -369,6 +456,7 @@ export type Database = {
         Row: {
           assigned_at: string
           assigned_by: string | null
+          branch_id: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
@@ -376,6 +464,7 @@ export type Database = {
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
+          branch_id?: string | null
           id?: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
@@ -383,11 +472,20 @@ export type Database = {
         Update: {
           assigned_at?: string
           assigned_by?: string | null
+          branch_id?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workflow_states: {
         Row: {
@@ -436,6 +534,7 @@ export type Database = {
     }
     Functions: {
       generate_claim_number: { Args: never; Returns: string }
+      get_user_branch: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -445,6 +544,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_branch_member: {
+        Args: { _branch_id: string; _user_id: string }
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
