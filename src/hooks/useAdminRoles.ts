@@ -5,6 +5,14 @@ import { toast } from "sonner";
 
 export type AppRole = Database["public"]["Enums"]["app_role"];
 
+interface CreateStaffAccountParams {
+  email: string;
+  password: string;
+  fullName: string;
+  role: AppRole;
+  branchId?: string;
+}
+
 export interface UserWithRole {
   id: string;
   email: string;
@@ -12,6 +20,7 @@ export interface UserWithRole {
   created_at: string;
   role: AppRole | null;
   role_id: string | null;
+  branch_id: string | null;
 }
 
 export const useAllUsersWithRoles = () => {
@@ -29,7 +38,7 @@ export const useAllUsersWithRoles = () => {
       // Fetch all user roles
       const { data: roles, error: rolesError } = await supabase
         .from("user_roles")
-        .select("id, user_id, role");
+        .select("id, user_id, role, branch_id");
 
       if (rolesError) throw rolesError;
 
@@ -43,6 +52,7 @@ export const useAllUsersWithRoles = () => {
           created_at: profile.created_at,
           role: userRole?.role || null,
           role_id: userRole?.id || null,
+          branch_id: userRole?.branch_id || null,
         };
       });
 
@@ -55,7 +65,7 @@ export const useAssignRole = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
+    mutationFn: async ({ userId, role, branchId }: { userId: string; role: AppRole; branchId?: string }) => {
       // Check if user already has a role
       const { data: existingRole, error: checkError } = await supabase
         .from("user_roles")
@@ -69,7 +79,7 @@ export const useAssignRole = () => {
         // Update existing role
         const { data, error } = await supabase
           .from("user_roles")
-          .update({ role, assigned_at: new Date().toISOString() })
+          .update({ role, branch_id: branchId || null, assigned_at: new Date().toISOString() })
           .eq("user_id", userId)
           .select()
           .single();
@@ -80,7 +90,7 @@ export const useAssignRole = () => {
         // Insert new role
         const { data, error } = await supabase
           .from("user_roles")
-          .insert({ user_id: userId, role })
+          .insert({ user_id: userId, role, branch_id: branchId || null })
           .select()
           .single();
 
@@ -95,6 +105,40 @@ export const useAssignRole = () => {
     },
     onError: (error) => {
       toast.error("Failed to assign role: " + error.message);
+    },
+  });
+};
+
+export const useCreateStaffAccount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: CreateStaffAccountParams) => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await supabase.functions.invoke("create-staff-account", {
+        body: params,
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to create account");
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all_users_with_roles"] });
+      toast.success("Staff account created successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to create staff account: " + error.message);
     },
   });
 };
