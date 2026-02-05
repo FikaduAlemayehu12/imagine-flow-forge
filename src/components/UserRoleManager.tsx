@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Shield, UserCheck, UserX, Loader2, Search } from "lucide-react";
+import { Users, Shield, UserCheck, UserX, Loader2, Search, UserPlus, Building2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,21 +28,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAllUsersWithRoles, useAssignRole, useRemoveRole, AppRole, UserWithRole } from "@/hooks/useAdminRoles";
+import { useBranches } from "@/hooks/useBranches";
 import { roleConfig } from "@/hooks/useUserRole";
 import { format } from "date-fns";
+import CreateStaffAccountDialog from "@/components/admin/CreateStaffAccountDialog";
+import { Label } from "@/components/ui/label";
 
-const allRoles: AppRole[] = ["taxpayer", "officer", "supervisor", "risk_analyst", "auditor", "admin"];
+const allRoles: AppRole[] = ["taxpayer", "officer", "supervisor", "risk_analyst", "auditor", "admin", "super_admin", "branch_staff"];
 
 const UserRoleManager = () => {
   const { data: users = [], isLoading } = useAllUsersWithRoles();
+  const { data: branches = [] } = useBranches();
   const assignRole = useAssignRole();
   const removeRole = useRemoveRole();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole | "">("");
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const filteredUsers = users.filter(
     (user) =>
@@ -53,12 +59,13 @@ const UserRoleManager = () => {
   const handleAssignRole = () => {
     if (selectedUser && selectedRole) {
       assignRole.mutate(
-        { userId: selectedUser.id, role: selectedRole as AppRole },
+        { userId: selectedUser.id, role: selectedRole as AppRole, branchId: selectedBranchId || undefined },
         {
           onSuccess: () => {
             setDialogOpen(false);
             setSelectedUser(null);
             setSelectedRole("");
+            setSelectedBranchId("");
           },
         }
       );
@@ -79,6 +86,7 @@ const UserRoleManager = () => {
   const openAssignDialog = (user: UserWithRole) => {
     setSelectedUser(user);
     setSelectedRole(user.role || "");
+    setSelectedBranchId(user.branch_id || "");
     setDialogOpen(true);
   };
 
@@ -121,7 +129,15 @@ const UserRoleManager = () => {
               </CardTitle>
               <CardDescription>Assign and manage user roles for access control</CardDescription>
             </div>
-            <div className="relative w-full sm:w-64">
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Create Staff Account
+              </Button>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search users..."
@@ -140,6 +156,7 @@ const UserRoleManager = () => {
                   <TableHead>User</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Current Role</TableHead>
+                  <TableHead>Branch</TableHead>
                   <TableHead>Joined</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -147,7 +164,7 @@ const UserRoleManager = () => {
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -164,6 +181,16 @@ const UserRoleManager = () => {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>
                       <TableCell>{getRoleBadge(user.role)}</TableCell>
+                      <TableCell>
+                        {user.branch_id ? (
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Building2 className="h-3 w-3" />
+                            {branches.find(b => b.id === user.branch_id)?.branch_name || "Unknown"}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(user.created_at), "MMM d, yyyy")}
                       </TableCell>
@@ -204,11 +231,13 @@ const UserRoleManager = () => {
           <DialogHeader>
             <DialogTitle>Assign Role</DialogTitle>
             <DialogDescription>
-              Select a role to assign to {selectedUser?.full_name}
+              Select a role and optionally a branch to assign to {selectedUser?.full_name}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium mb-2 block">Select Role</label>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Select Role</Label>
             <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as AppRole)}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose a role" />
@@ -224,6 +253,28 @@ const UserRoleManager = () => {
                 ))}
               </SelectContent>
             </Select>
+            </div>
+            
+            {/* Branch selection for branch_staff or officer */}
+            {(selectedRole === "branch_staff" || selectedRole === "officer") && (
+              <div className="space-y-2">
+                <Label>Assign to Branch {selectedRole === "branch_staff" ? "*" : "(Optional)"}</Label>
+                <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a branch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No branch</SelectItem>
+                    {branches.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.branch_name} ({branch.region})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
@@ -231,7 +282,7 @@ const UserRoleManager = () => {
             </Button>
             <Button 
               onClick={handleAssignRole} 
-              disabled={!selectedRole || assignRole.isPending}
+            disabled={!selectedRole || assignRole.isPending || (selectedRole === "branch_staff" && !selectedBranchId)}
             >
               {assignRole.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Assign Role
@@ -265,6 +316,12 @@ const UserRoleManager = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Staff Account Dialog */}
+      <CreateStaffAccountDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </>
   );
 };

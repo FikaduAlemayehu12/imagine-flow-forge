@@ -52,4 +52,6 @@ export const roleConfig: Record<AppRole, { label: string; color: string; bgColor
   risk_analyst: { label: "Risk Analyst", color: "text-amber-700", bgColor: "bg-amber-50 border-amber-200" },
   auditor: { label: "Auditor", color: "text-indigo-700", bgColor: "bg-indigo-50 border-indigo-200" },
   admin: { label: "Administrator", color: "text-rose-700", bgColor: "bg-rose-50 border-rose-200" },
+  super_admin: { label: "Super Admin", color: "text-red-700", bgColor: "bg-red-50 border-red-200" },
+  branch_staff: { label: "Branch Staff", color: "text-teal-700", bgColor: "bg-teal-50 border-teal-200" },
 };
