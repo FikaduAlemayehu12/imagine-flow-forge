@@ -1,4 +1,4 @@
-import { Eye, MoreHorizontal, Loader2, CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { Eye, MoreHorizontal, Loader2, CheckCircle, XCircle, ArrowRight, ShieldCheck, AlertTriangle, AlertCircle, ClipboardCheck, FileSearch } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { useClaimsByStatus, ClaimStatus, useUpdateClaimStatus } from "@/hooks/useStaffClaims";
+import { useClaimsByStatus, ClaimStatus, useUpdateClaimStatus, RiskLevel } from "@/hooks/useStaffClaims";
 import { useToast } from "@/hooks/use-toast";
 
 interface StaffClaimsTableProps {
@@ -29,6 +30,33 @@ const statusConfig: Record<ClaimStatus, { label: string; className: string }> = 
   rejected: { label: "Rejected", className: "bg-red-50 text-red-700 border-red-200" },
   payment_processing: { label: "Payment Processing", className: "bg-indigo-50 text-indigo-700 border-indigo-200" },
   paid: { label: "Paid", className: "bg-green-50 text-green-700 border-green-200" },
+};
+
+const riskConfig: Record<RiskLevel, { label: string; icon: typeof ShieldCheck; className: string; decision: string }> = {
+  low: {
+    label: "Low Risk",
+    icon: ShieldCheck,
+    className: "bg-green-100 text-green-700 border-green-200",
+    decision: "Auto-Approve",
+  },
+  medium: {
+    label: "Medium Risk",
+    icon: AlertCircle,
+    className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    decision: "Partial Audit",
+  },
+  high: {
+    label: "High Risk",
+    icon: AlertTriangle,
+    className: "bg-orange-100 text-orange-700 border-orange-200",
+    decision: "Full Manual Audit",
+  },
+  critical: {
+    label: "Critical Risk",
+    icon: AlertTriangle,
+    className: "bg-red-100 text-red-700 border-red-200",
+    decision: "Full Manual Audit + Escalation",
+  },
 };
 
 const StaffClaimsTable = ({ statuses, limit, showActions = false }: StaffClaimsTableProps) => {
@@ -70,6 +98,115 @@ const StaffClaimsTable = ({ statuses, limit, showActions = false }: StaffClaimsT
     }
   };
 
+  const getRiskBasedActions = (claimId: string, riskLevel: RiskLevel | null | undefined) => {
+    if (!riskLevel) {
+      // No risk assessment yet — standard actions
+      return (
+        <>
+          <DropdownMenuItem onClick={() => handleStatusUpdate(claimId, "risk_assessment")}>
+            <FileSearch className="h-4 w-4 mr-2" />
+            Send to Risk Assessment
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleStatusUpdate(claimId, "officer_review")}>
+            <ArrowRight className="h-4 w-4 mr-2" />
+            Move to Officer Review
+          </DropdownMenuItem>
+        </>
+      );
+    }
+
+    switch (riskLevel) {
+      case "low":
+        return (
+          <>
+            <DropdownMenuLabel className="text-green-700 text-xs">
+              <ShieldCheck className="h-3 w-3 inline mr-1" />
+              Low Risk — Auto-Approve Eligible
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-emerald-600"
+              onClick={() => handleStatusUpdate(claimId, "approved")}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Auto-Approve (Low Risk)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusUpdate(claimId, "supervisor_approval")}>
+              <ArrowRight className="h-4 w-4 mr-2" />
+              Forward to Supervisor
+            </DropdownMenuItem>
+          </>
+        );
+      case "medium":
+        return (
+          <>
+            <DropdownMenuLabel className="text-yellow-700 text-xs">
+              <AlertCircle className="h-3 w-3 inline mr-1" />
+              Medium Risk — Partial Audit Required
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleStatusUpdate(claimId, "officer_review")}>
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              Partial Audit Review
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusUpdate(claimId, "supervisor_approval")}>
+              <ArrowRight className="h-4 w-4 mr-2" />
+              Forward to Supervisor
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-emerald-600"
+              onClick={() => handleStatusUpdate(claimId, "approved")}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Approve After Audit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => handleStatusUpdate(claimId, "rejected")}
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Reject
+            </DropdownMenuItem>
+          </>
+        );
+      case "high":
+      case "critical":
+        return (
+          <>
+            <DropdownMenuLabel className="text-red-700 text-xs">
+              <AlertTriangle className="h-3 w-3 inline mr-1" />
+              {riskLevel === "critical" ? "Critical" : "High"} Risk — Full Manual Audit Required
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleStatusUpdate(claimId, "under_review")}>
+              <FileSearch className="h-4 w-4 mr-2" />
+              Assign to MoR Audit Team
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusUpdate(claimId, "supervisor_approval")}>
+              <ArrowRight className="h-4 w-4 mr-2" />
+              Escalate to Supervisor
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-emerald-600"
+              onClick={() => handleStatusUpdate(claimId, "approved")}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Approve After Full Audit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => handleStatusUpdate(claimId, "rejected")}
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Reject
+            </DropdownMenuItem>
+          </>
+        );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -96,64 +233,72 @@ const StaffClaimsTable = ({ statuses, limit, showActions = false }: StaffClaimsT
             <TableHead className="font-semibold text-foreground">Amount</TableHead>
             <TableHead className="font-semibold text-foreground">Submitted</TableHead>
             <TableHead className="font-semibold text-foreground">Status</TableHead>
+            <TableHead className="font-semibold text-foreground">Risk Level</TableHead>
+            <TableHead className="font-semibold text-foreground">Decision</TableHead>
             {showActions && <TableHead className="font-semibold text-foreground text-right">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {displayedClaims.map((claim) => (
-            <TableRow key={claim.id} className="border-border hover:bg-muted/30">
-              <TableCell className="font-medium text-foreground">{claim.claim_number}</TableCell>
-              <TableCell className="text-muted-foreground">{claim.vat_period}</TableCell>
-              <TableCell className="font-medium text-foreground">{formatCurrency(Number(claim.claim_amount))}</TableCell>
-              <TableCell className="text-muted-foreground">{formatDate(claim.submitted_at || claim.created_at)}</TableCell>
-              <TableCell>
-                <Badge variant="outline" className={statusConfig[claim.status].className}>
-                  {statusConfig[claim.status].label}
-                </Badge>
-              </TableCell>
-              {showActions && (
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(claim.id, "officer_review")}>
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Move to Officer Review
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(claim.id, "supervisor_approval")}>
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Move to Supervisor
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          className="text-emerald-600"
-                          onClick={() => handleStatusUpdate(claim.id, "approved")}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-red-600"
-                          onClick={() => handleStatusUpdate(claim.id, "rejected")}
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Reject
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+          {displayedClaims.map((claim) => {
+            const risk = claim.risk_level ? riskConfig[claim.risk_level] : null;
+            const RiskIcon = risk?.icon;
+
+            return (
+              <TableRow key={claim.id} className="border-border hover:bg-muted/30">
+                <TableCell className="font-medium text-foreground">{claim.claim_number}</TableCell>
+                <TableCell className="text-muted-foreground">{claim.vat_period}</TableCell>
+                <TableCell className="font-medium text-foreground">{formatCurrency(Number(claim.claim_amount))}</TableCell>
+                <TableCell className="text-muted-foreground">{formatDate(claim.submitted_at || claim.created_at)}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={statusConfig[claim.status].className}>
+                    {statusConfig[claim.status].label}
+                  </Badge>
                 </TableCell>
-              )}
-            </TableRow>
-          ))}
+                <TableCell>
+                  {risk && RiskIcon ? (
+                    <Badge variant="outline" className={`${risk.className} flex items-center gap-1 w-fit`}>
+                      <RiskIcon className="h-3 w-3" />
+                      {risk.label}
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Not assessed</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {risk ? (
+                    <span className={`text-xs font-medium ${
+                      claim.risk_level === "low" ? "text-green-700" :
+                      claim.risk_level === "medium" ? "text-yellow-700" :
+                      "text-red-700"
+                    }`}>
+                      {risk.decision}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                {showActions && (
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64">
+                          {getRiskBasedActions(claim.id, claim.risk_level)}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

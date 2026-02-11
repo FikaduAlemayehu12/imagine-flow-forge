@@ -4,8 +4,14 @@ import { Tables } from "@/integrations/supabase/types";
 
 export type RefundClaim = Tables<"refund_claims">;
 export type ClaimStatus = RefundClaim["status"];
+export type RiskLevel = "low" | "medium" | "high" | "critical";
 
-// Hook for staff to view all claims
+export interface ClaimWithRisk extends RefundClaim {
+  risk_level?: RiskLevel | null;
+  risk_score?: number | null;
+}
+
+// Hook for staff to view all claims with risk data
 export const useAllClaims = () => {
   return useQuery({
     queryKey: ["all_claims"],
@@ -16,7 +22,32 @@ export const useAllClaims = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // Fetch risk assessments for all claims
+      const claimIds = (data || []).map((c) => c.id);
+      let riskMap: Record<string, { risk_level: RiskLevel; risk_score: number }> = {};
+
+      if (claimIds.length > 0) {
+        const { data: risks } = await supabase
+          .from("risk_assessments")
+          .select("claim_id, risk_level, risk_score")
+          .in("claim_id", claimIds)
+          .order("assessed_at", { ascending: false });
+
+        if (risks) {
+          for (const r of risks) {
+            if (!riskMap[r.claim_id]) {
+              riskMap[r.claim_id] = { risk_level: r.risk_level as RiskLevel, risk_score: r.risk_score };
+            }
+          }
+        }
+      }
+
+      return (data || []).map((claim) => ({
+        ...claim,
+        risk_level: riskMap[claim.id]?.risk_level ?? null,
+        risk_score: riskMap[claim.id]?.risk_score ?? null,
+      })) as ClaimWithRisk[];
     },
   });
 };
@@ -33,7 +64,31 @@ export const useClaimsByStatus = (statuses: ClaimStatus[]) => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      const claimIds = (data || []).map((c) => c.id);
+      let riskMap: Record<string, { risk_level: RiskLevel; risk_score: number }> = {};
+
+      if (claimIds.length > 0) {
+        const { data: risks } = await supabase
+          .from("risk_assessments")
+          .select("claim_id, risk_level, risk_score")
+          .in("claim_id", claimIds)
+          .order("assessed_at", { ascending: false });
+
+        if (risks) {
+          for (const r of risks) {
+            if (!riskMap[r.claim_id]) {
+              riskMap[r.claim_id] = { risk_level: r.risk_level as RiskLevel, risk_score: r.risk_score };
+            }
+          }
+        }
+      }
+
+      return (data || []).map((claim) => ({
+        ...claim,
+        risk_level: riskMap[claim.id]?.risk_level ?? null,
+        risk_score: riskMap[claim.id]?.risk_score ?? null,
+      })) as ClaimWithRisk[];
     },
     enabled: statuses.length > 0,
   });
