@@ -91,6 +91,17 @@ export const useCreateClaim = () => {
         .single();
 
       if (error) throw error;
+
+      // Trigger auto risk assessment
+      try {
+        await supabase.functions.invoke("auto-risk-assessment", {
+          body: { claim_id: data.id },
+        });
+      } catch (riskError) {
+        console.error("Auto risk assessment failed:", riskError);
+        // Don't block claim submission if risk assessment fails
+      }
+
       return data;
     },
     onSuccess: () => {
